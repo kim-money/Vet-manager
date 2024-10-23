@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGROvet Manager</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Distinct Background Gradient Animation */
+        body {
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #FF3CAC, #784BA0, #2B86C5, #00FFCB, #A3A1FF);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; background-color: #FF3CAC; }
+            20% { background-position: 50% 50%; background-color: #784BA0; }
+            40% { background-position: 100% 50%; background-color: #2B86C5; }
+            60% { background-position: 50% 50%; background-color: #00FFCB; }
+            80% { background-position: 0% 50%; background-color: #A3A1FF; }
+            100% { background-position: 100% 50%; background-color: #FF3CAC; }
+        }
+
+        /* Center the form container */
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        /* Styling for the form fields */
+        .form-control {
+            border-radius: 50px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        /* Dynamic Gradient Button */
+        .btn-login {
+            background: linear-gradient(90deg, #ff6a00, #ee0979);
+            border: none;
+            color: white;
+            border-radius: 50px;
+            padding: 10px 0;
+            font-size: 16px;
+            width: 100%;
+            margin-bottom: 20px;
+            background-size: 200% 200%;
+            animation: buttonGradientAnimation 4s ease infinite;
+        }
+
+        @keyframes buttonGradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Social login buttons */
+        .social-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .social-buttons a {
+            display: inline-block;
+            background-color: #f7f7f7;
+            padding: 10px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            line-height: 20px;
+        }
+
+        /* Responsive behavior */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+                background: white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="text" class="form-control" id="username" name="username" placeholder="Type your username" required>
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Type your password" required>
+            </div>
+            <button type="submit" class="btn-login">LOGIN</button>
+        </form>
+    </div>
+
+
+
+
+    <!-- Bootstrap JS (Optional) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
