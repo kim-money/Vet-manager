@@ -10,29 +10,32 @@
 
     <!-- Bootstrap 4 CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <!-- Fixed Title -->
-    <div class="title-bar">
-        <h1>AgroVet Manager</h1>
-    </div>
-
-    <!-- Navbar -->
-    <header class="navbar navbar-expand-lg">
+    <!-- Title Bar -->
+    <header class="navbar navbar-expand-lg fixed-top title-bar">
         <div class="navbar-left">
-            <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+            <span class="site-name">AgroVet-Manager</span>
+        </div>
+        <div class="navbar-center">
+            <input type="text" placeholder="Search..." class="search-bar">
         </div>
         <div class="navbar-right">
-            <div class="user-menu">
-                <span class="username">{{ user.username }}</span>
+            <div class="dropdown">
+                <span class="username dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ user.username }}</span>
                 <i class="fas fa-user"></i>
-                <div class="dropdown-menu">
-                    <a href="{% url 'logout' %}">Logout</a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                 </div>
             </div>
+        </div>
+    </header>
+
+    <!-- Navbar -->
+    <header class="navbar navbar-expand-lg" style="max-width: 95%; margin: auto; border-radius: 10px; background-color: #448aa1;">
+        <div class="navbar-left">
+            <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
         </div>
     </header>
 
@@ -41,19 +44,32 @@
     </main>
 
     <footer>
-        <p>&copy; 2024 AgroVet Manager</p>
+        <p>&copy; 2024 AgroVet Manager | Powered by
+            <a href="https://optinet.co.ke" target="_blank" style="color: white; text-decoration: none;">
+                Optinet Global
+            </a>
+        </p>
     </footer>
 
-    <script>
-        // Dropdown Menu Functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const userMenu = document.querySelector('.user-menu');
-            const dropdownMenu = document.querySelector('.dropdown-menu');
+    {% block extra_js %}{% endblock %}
 
-            userMenu.addEventListener('click', function() {
+    <!-- jQuery, Popper.js, and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Custom Dropdown Script for Click Handling -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenu = document.querySelector('.dropdown-toggle');
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+            
+            userMenu.addEventListener('click', function(event) {
+                event.stopPropagation();
                 dropdownMenu.classList.toggle('show');
             });
-
+            
+            // Close dropdown if clicking outside
             window.addEventListener('click', function(event) {
                 if (!userMenu.contains(event.target)) {
                     dropdownMenu.classList.remove('show');
@@ -61,10 +77,5 @@
             });
         });
     </script>
-
-    <!-- Bootstrap 4 JS and dependencies (jQuery, Popper.js) -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
