@@ -1,0 +1,116 @@
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #0d0e0f41; /* Dark theme similar to OpenAI */
+    color: #ffffff88;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Title Bar */
+.title-bar {
+    text-align: center;
+    background-color: #448aa1; /* Light Blue */
+    color: #fff;
+    padding: 20px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Navbar Styles */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #448aa1; /* Light Blue */
+    color: #fff;
+    padding: 10px 20px;
+    position: fixed;
+    top: 60px; /* Fixed below title */
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-left {
+    display: flex;
+}
+
+.navbar-left .nav-link {
+    color: #fff;
+    margin-right: 20px;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.navbar-left .nav-link:hover {
+    text-decoration: underline;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.user-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.user-menu .fas {
+    font-size: 18px;
+    margin-left: 5px;
+}
+
+.username {
+    margin-right: 10px;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 10px;
+    color: #333;
+    text-decoration: none;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f0f0f0;
+}
+
+/* Content */
+.content {
+    margin-top: 140px; /* Adjusted for title and navbar */
+    padding: 20px;
+    flex-grow: 1;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #ADD8E6; /* Light Blue */
+    color: #fff;
+    position: relative;
+    width: 100%;
+}

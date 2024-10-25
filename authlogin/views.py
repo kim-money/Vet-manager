@@ -22,3 +22,7 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('login')
+
+@login_required(login_url= '/authlogin/login')
+def dashboard(request):
+    return render(request, 'dashboard.html')
