@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <span class="d-flex align-items-center">
+                Settings
+                <i class="fas fa-cog" style="font-size: inherit; margin-left: 10px;"></i>
+            </span>
+        </h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-left">
+        <div class="col-md-8">
+            <div class="card">
+                <!-- Dynamic Header Color using theme -->
+                <div class="card-header text-white" style="background-color: #448aa1;">
+                    Shop Information
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6>Shop Name:</h6>
+                            <p>{{ shop.name }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>Address:</h6>
+                            <p>{{ shop.address }}</p>
+                        </div>
+                        <div class="col-md-5">
+                            <h6>Logo:</h6>
+                            {% if shop.logo %}
+                                <img src="{{ shop.logo.url }}" alt="Shop Logo" class="img-fluid" style="max-height: 150px; width: auto;">
+                            {% else %}
+                                <p>No logo available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6>Email:</h6>
+                            <p>{{ shop.email }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>Telephone:</h6>
+                            <p>{{ shop.phone }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6>Website:</h6>
+                            <p>{{ shop.website }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="{% url 'edit_shop_details' %}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Edit Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
