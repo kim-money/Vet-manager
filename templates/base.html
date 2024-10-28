@@ -1,76 +1,85 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 {% load static %}
 <html lang="en">
-<head>    
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AgroVet Manager{% endblock %}</title>
+    <title>{% block title %}Agro-vet Manager{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="icon" href="{{ MEDIA_URL }}favicon.ico" type="image/x-icon">
 
+
     <!-- Bootstrap 4 CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Dynamic Theme Variables -->
+    <style>
+        :root {
+            --primary-color: {% if theme %}{{ theme.primary_color }}{% else %}#448aa1{% endif %};            
+        }
+    </style>
 </head>
 <body>
-    <!-- Title Bar -->
-    <header class="navbar navbar-expand-lg fixed-top title-bar">
+    <header class="navbar navbar-expand-lg fixed-top" style="background-color: var(--primary-color);">
         <div class="navbar-left">
-            <span class="site-name">AgroVet-Manager</span>
+            <!-- Dynamic Shop Name -->
+            <span class="site-name">
+                {% if shop and shop.name %}
+                    {{ shop.name }}
+                {% else %}
+                    Agro-vet Manager
+                {% endif %}
+            </span>
         </div>
         <div class="navbar-center">
             <input type="text" placeholder="Search..." class="search-bar">
         </div>
         <div class="navbar-right">
-            <div class="dropdown">
-                <span class="username dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ user.username }}</span>
+            <div class="user-menu">
+                <span class="username">{{ user.username }}</span>
                 <i class="fas fa-user"></i>
-                <div class="dropdown-menu dropdown-menu-right">
-                    <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+                <div class="dropdown-menu">
+                    <a href="{% url 'logout' %}">Logout</a>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Navbar -->
-    <header class="navbar navbar-expand-lg" style="max-width: 95%; margin: auto; border-radius: 10px; background-color: #448aa1;">
-        <div class="navbar-left">
-            <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
-            <a href="{% url 'shop_details' %}" class="nav-link">Shop Info</a>
-        </div>
-    </header>
+    <aside class="sidebar" style="background-color: var(--primary-color);">
+        <ul>
+            <li>
+                <a href="{% url 'dashboard' %}" title="Dashboard">
+                    <i class="fas fa-tachometer-alt text-primary"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+            </li>            
+        </ul>
+    </aside>
 
     <main class="content">
-        {% block content %}{% endblock %}
+        {% block content %}
+        
+        {% endblock %}
     </main>
 
-    <footer>
-        <p>&copy; 2024 AgroVet Manager | Powered by
-            <a href="https://optinet.co.ke" target="_blank" style="color: white; text-decoration: none;">
-                Optinet Global
-            </a>
-        </p>
-    </footer>
-
+    
     {% block extra_js %}{% endblock %}
 
-    <!-- jQuery, Popper.js, and Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-    <!-- Custom Dropdown Script for Click Handling -->
     <script>
+        // Dropdown Menu Functionality
         document.addEventListener('DOMContentLoaded', function() {
-            const userMenu = document.querySelector('.dropdown-toggle');
+            const userMenu = document.querySelector('.user-menu');
             const dropdownMenu = document.querySelector('.dropdown-menu');
-            
-            userMenu.addEventListener('click', function(event) {
-                event.stopPropagation();
+
+            userMenu.addEventListener('click', function() {
+                // Toggle the 'show' class on the dropdown menu
                 dropdownMenu.classList.toggle('show');
             });
-            
-            // Close dropdown if clicking outside
+
+            // Close the dropdown if the user clicks outside of it
             window.addEventListener('click', function(event) {
                 if (!userMenu.contains(event.target)) {
                     dropdownMenu.classList.remove('show');
@@ -78,5 +87,11 @@
             });
         });
     </script>
+
+    <!-- Bootstrap 4 JS and dependencies (jQuery, Popper.js) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 </body>
 </html>
