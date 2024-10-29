@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <span class="d-flex align-items-center">
+                Product Inventory
+                <i class="fas fa-boxes" style="font-size: inherit; margin-left: 10px;"></i>
+            </span>
+        </h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-left">
+        <div class="col-md-12">
+            <div class="card">
+                <!-- Dynamic Header Color using theme -->
+                <div class="card-header text-white" style="background-color: #448aa1;">
+                    Products in Stock
+                </div>
+                <div class="card-body">
+                    <!-- Search and Category Filter -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <input type="text" id="search" class="form-control" placeholder="Search products..." onkeyup="filterProducts()">
+                        </div>
+                        <div class="col-md-4">
+                            <select id="categoryFilter" class="form-control" onchange="filterProducts()">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Product List -->
+                    <div class="row" id="productList">
+                        {% for product in products %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ product.name }}</h5>
+                                    <p class="card-text">
+                                        <strong>Category:</strong> {{ product.category.name }}<br>
+                                        <strong>Price:</strong> ${{ product.price }}<br>
+                                        <strong>Stock:</strong> {{ product.stock }}
+                                    </p>
+                                    <a href="{% url 'add_order' product.id %}" class="btn btn-primary">
+                                        <i class="fas fa-cart-plus"></i> Order
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterProducts() {
+    const search = document.getElementById('search').value.toLowerCase();
+    const categoryFilter = document.getElementById('categoryFilter').value;
+    const url = new URL(window.location.href);
+    url.searchParams.set('search', search);
+    url.searchParams.set('category', categoryFilter);
+    window.location.href = url.toString();
+}
+
+// Pagination functionality
+let currentPage = 1;
+const productsPerPage = 9;
+
+function paginateProducts(page) {
+    currentPage = page;
+    const products = document.querySelectorAll('.product');
+    products.forEach((product, index) => {
+        product.style.display = (index >= (page - 1) * productsPerPage && index < page * productsPerPage) ? 'block' : 'none';
+    });
+}
+
+// Initial pagination on page load
+document.addEventListener('DOMContentLoaded', () => paginateProducts(currentPage));
+</script>
+
+{% endblock %}
