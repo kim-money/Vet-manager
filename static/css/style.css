@@ -309,7 +309,8 @@ footer {
     }
 
     .content {
-        margin-left: 0; /* Ensure content takes full width when sidebar is hidden */
+        margin-top: 70px; /* Adjusted based on navbar height */
+        padding: 20px;
     }
 
     .modal-content {
