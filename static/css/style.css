@@ -8,7 +8,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    font-size: 0.75em; 
+    font-size: 0.75em; /* Reduced font size */
 }
 
 /* Navbar Styles */
@@ -16,7 +16,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #448aa1;
+    background-color: var(--primary-color); /* Use dynamic primary color */
     color: #fff;
     padding: 10px 20px;
     position: fixed;
@@ -111,7 +111,7 @@ body {
     left: 0;
     width: 60px;
     height: calc(100% - 60px);
-    background-color: #448aa1;
+    background-color: var(--secondary-color); /* Use dynamic secondary color */
     padding: 10px 0;
     display: flex;
     flex-direction: column;
@@ -144,7 +144,8 @@ body {
 }
 
 .sidebar ul li a:hover {
-    background-color: #448aa1;
+    background-color: var(--hover-color); /* Darken the secondary color dynamically */
+}
 
 .sidebar ul li a .sidebar-text {
     display: none;
@@ -208,7 +209,7 @@ body {
 }
 
 .table-full-width th {
-    background-color: #448aa1;
+    background-color: var(--primary-color); /* Use dynamic primary color */
     color: white;
 }
 
@@ -223,7 +224,7 @@ body {
 footer {
     text-align: center;
     padding: 10px 0;
-    background-color: #448aa1;
+    background-color: var(--primary-color); /* Use dynamic primary color */
     color: #fff;
     position: relative;
     width: 100%;
@@ -274,7 +275,7 @@ footer {
     padding: 10px 20px;
     font-size: 16px;
     color: #fff;
-    background-color: #448aa1;
+    background-color: var(--primary-color); /* Use dynamic primary color */
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -282,7 +283,7 @@ footer {
 }
 
 .modal-content form .btn:hover {
-    background-color: #448aa1;
+    background-color: var(--hover-color); /* Darken the primary color dynamically */
 }
 
 /* Responsive Adjustments */
@@ -309,8 +310,7 @@ footer {
     }
 
     .content {
-        margin-top: 70px; /* Adjusted based on navbar height */
-        padding: 20px;
+        margin-left: 0; /* Ensure content takes full width when sidebar is hidden */
     }
 
     .modal-content {
@@ -324,7 +324,7 @@ footer {
 }
 
 .table thead th {
-    background-color: #448aa1;
+    background-color: var(--primary-color); /* Use dynamic primary color */
     color: white;
 }
 
@@ -333,5 +333,4 @@ footer {
     .toggle-sidebar {
         display: none;
     }
-} 
 }

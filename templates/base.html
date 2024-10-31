@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Agro-vet Manager{% endblock %}</title>
+    <title>{% block title %}AGROvet-Manager{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="icon" href="{{ MEDIA_URL }}favicon.ico" type="image/x-icon">
 
@@ -30,7 +30,7 @@
                 {% if shop and shop.name %}
                     {{ shop.name }}
                 {% else %}
-                    Agro-vet Manager
+                    AGROvet-Manager
                 {% endif %}
             </span>
         </div>
@@ -52,29 +52,34 @@
         <ul>
             <li>
                 <a href="{% url 'dashboard' %}" title="Dashboard">
-                    <i class="fas fa-chart-line fa-2x"></i>                    
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="sidebar-text">Dashboard</span>
                 </a>
             </li>
             <li>
-                <a href="{% url 'shop_details' %}" title="shop_details">
-                    <i class="fas fa-store fa-2x"></i>                    
+                <a href="{% url 'product_list' %}" title="Inventory">
+                    <i class="fas fa-boxes"></i>
+                    <span class="sidebar-text">Inventory</span>
+                </a>
+            </li>     
+            <li>
+                <a href="{% url 'shop_details' %}" title="Settings">
+                    <i class="fa fa-cog"></i>
+                    <span class="sidebar-text">Settings</span>
                 </a>
             </li>
-            <li>
-                <a href="{% url 'product_list' %}" title="products">
-                    <i class="fas fa-boxes "></i>                    
-                </a>
-            </li>                
         </ul>
     </aside>
 
     <main class="content">
-        {% block content %}
-        
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
 
-    
+    <footer style="background-color: var(--primary-color);">
+        <p>&copy; @2024 AGROvet-Manager Sync | Powered by Key-money            
+        </p>
+    </footer>
+
     {% block extra_js %}{% endblock %}
 
     <script>
