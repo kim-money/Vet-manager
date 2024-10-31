@@ -1,17 +1,126 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1>{{ form.instance.pk|yesno:"Edit Product,Add Product" }}</h1>
-    <div class="card mt-4">
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-success">Save</button>
-                <a href="{% url 'product_list' %}" class="btn btn-secondary">Cancel</a>
-            </form>
-        </div>
+
+<div class="container mt-4">
+    {% include 'inventory/inventory_navbar.html' %}
+
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="d-flex align-items-center">Edit Product: {{ product.name }}</h1>
+        <a href="{% url 'product_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Product List
+        </a>
     </div>
+
+    <form method="post" action="{% url 'edit_product' product.id %}">
+        {% csrf_token %}
+
+        <!-- Barcode and Print Barcode Button -->
+        <div class="form-group">
+            <label for="barcode">Barcode:</label>
+            <div class="input-group">
+                <input type="text" name="barcode" id="barcode" class="form-control" value="{{ product.barcode }}" readonly>
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-success" onclick="printSingleBarcode('{{ product.barcode }}')">Print Barcode</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Name -->
+        <div class="form-group">
+            <label for="name">Product Name:</label>
+            <input type="text" name="name" id="name" class="form-control" value="{{ product.name }}" required>
+        </div>
+
+        <!-- Buying Price -->
+        <div class="form-group">
+            <label for="buying_price">Buying Price:</label>
+            <input type="number" step="0.01" name="buying_price" id="buying_price" class="form-control" value="{{ product.buying_price }}" required>
+        </div>
+
+        <!-- Selling Price -->
+        <div class="form-group">
+            <label for="selling_price">Selling Price:</label>
+            <input type="number" step="0.01" name="selling_price" id="selling_price" class="form-control" value="{{ product.selling_price }}" required>
+        </div>
+
+        <!-- Wholesale Price -->
+        <div class="form-group">
+            <label for="wholesale_price">Wholesale Price (optional):</label>
+            <input type="number" step="0.01" name="wholesale_price" id="wholesale_price" class="form-control" value="{{ product.wholesale_price }}">
+        </div>
+
+        <!-- Stock Quantity -->
+        <div class="form-group">
+            <label for="stock_quantity">Stock Quantity:</label>
+            <input type="number" name="stock_quantity" id="stock_quantity" class="form-control" value="{{ product.stock_quantity }}" required>
+        </div>
+
+        <!-- Low Stock Threshold -->
+        <div class="form-group">
+            <label for="low_stock_threshold">Low Stock Threshold:</label>
+            <input type="number" name="low_stock_threshold" id="low_stock_threshold" class="form-control" value="{{ product.low_stock_threshold }}">
+        </div>
+
+        <!-- Packaging Type -->
+        <div class="form-group">
+            <label for="packaging_type">Packaging Type:</label>
+            <input type="text" name="packaging_type" id="packaging_type" class="form-control" value="{{ product.packaging_type }}">
+        </div>
+
+        <!-- Expiry Date -->
+        <div class="form-group">
+            <label for="expiry_date">Expiry Date:</label>
+            <input type="date" name="expiry_date" id="expiry_date" class="form-control" value="{{ product.expiry_date|date:'Y-m-d' }}">
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+            <label for="category">Category:</label>
+            <select name="category" id="category" class="form-control">
+                <option value="">Select a Category</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id == product.category.id %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Print Multiple Barcodes -->
+        <div class="form-group">
+            <label for="barcode_quantity">Print Barcodes:</label>
+            <div class="input-group">
+                <input type="number" id="barcode_quantity" class="form-control" placeholder="Enter quantity" min="1">
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-secondary" onclick="printMultipleBarcodes('{{ product.barcode }}', document.getElementById('barcode_quantity').value)">Print</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Changes Button -->
+        <button type="submit" class="btn btn-success">Save Changes</button>
+    </form>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Function to print a single barcode
+function printSingleBarcode(barcode) {
+    if (barcode) {
+        window.location.href = `/inventory/products/print-barcodes/?ids={{ product.id }}&quantity=1`;
+    } else {
+        alert("No barcode available to print.");
+    }
+}
+
+// Function to print multiple barcodes
+function printMultipleBarcodes(barcode, quantity) {
+    if (barcode && quantity > 0) {
+        window.location.href = `/inventory/products/print-barcodes/?ids={{ product.id }}&quantity=${quantity}`;
+    } else {
+        alert("Please enter a valid quantity for barcode printing.");
+    }
+}
+</script>
 {% endblock %}

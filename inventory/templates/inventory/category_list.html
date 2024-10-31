@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block content %}
+            {% include 'inventory/inventory_navbar.html' %}
+
+<div>
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="d-flex align-items-center">Categories
+            <button class="btn btn-success ml-3" id="add-category-btn" title="Add Category" style="padding: 0.5rem; border-radius: 50%;">
+                <i class="fas fa-plus"></i>
+            </button>
+
+        </h2>
+        <button type="submit" class="btn btn-danger" id="bulk-delete-btn" disabled>
+            Delete Selected
+        </button>
+    </div>
+
+    <form method="post" id="bulk-delete-form" class="mt-3">
+        {% csrf_token %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped" id="categoryTable">
+                <thead class="bg-success text-white">
+                    <tr>
+                        <th style="width: 5%;"><input type="checkbox" id="select-all"></th>
+                        <th style="width: 45%;">Category Name</th>
+                        <th style="width: 35%;">Type</th>
+                        <th style="width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td><input type="checkbox" name="selected_categories" value="{{ category.id }}" class="category-checkbox"></td>
+                        <td>{{ category.name }}</td>
+                        <td>
+                            {% if category.parent %}
+                                Subcategory of {{ category.parent.name }}
+                            {% else %}
+                                Main Category
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-info edit-category-btn"
+                                    data-id="{{ category.id }}"
+                                    data-name="{{ category.name }}"
+                                    data-parent="{% if category.parent %}{{ category.parent.id }}{% else %}none{% endif %}">
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                    {% for subcategory in category.subcategories.all %}
+                    <tr>
+                        <td><input type="checkbox" name="selected_categories" value="{{ subcategory.id }}" class="category-checkbox"></td>
+                        <td>— {{ subcategory.name }}</td>
+                        <td>Subcategory of {{ category.name }}</td>
+                        <td>
+                            <button type="button" class="btn btn-info edit-category-btn"
+                                    data-id="{{ subcategory.id }}"
+                                    data-name="{{ subcategory.name }}"
+                                    data-parent="{{ category.id }}">
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addCategoryModalLabel">Add Category</h5>
+                <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-category-form" method="post" action="{% url 'add_category' %}">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-success btn-block">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
+                <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-category-form" method="post" action="">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-success btn-block">Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Show the add category modal
+    document.getElementById('add-category-btn').addEventListener('click', function(event) {
+        event.preventDefault();
+        const modal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
+        modal.show();
+    });
+
+    // Handle the edit category button click
+    document.querySelectorAll('.edit-category-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const categoryId = btn.getAttribute('data-id');
+            const categoryName = btn.getAttribute('data-name');
+            const categoryParent = btn.getAttribute('data-parent');
+
+            // Update the form action
+            const form = document.getElementById('edit-category-form');
+            form.action = `/inventory/categories/edit/${categoryId}/`;
+
+            // Update form fields
+            form.querySelector('input[name="name"]').value = categoryName;
+            if (categoryParent !== 'none') {
+                form.querySelector('select[name="parent"]').value = categoryParent;
+            } else {
+                form.querySelector('select[name="parent"]').value = '';
+            }
+
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
+            modal.show();
+        });
+    });
+
+    // Handle the select-all checkbox
+    document.getElementById('select-all').addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('.category-checkbox');
+        checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+        updateBulkDeleteButtonState();
+    });
+
+    // Handle the individual checkboxes
+    document.querySelectorAll('.category-checkbox').forEach(function (checkbox) {
+        checkbox.addEventListener('click', updateBulkDeleteButtonState);
+    });
+
+    // Enable or disable the bulk delete button based on selections
+    function updateBulkDeleteButtonState() {
+        const anyChecked = Array.from(document.querySelectorAll('.category-checkbox')).some(checkbox => checkbox.checked);
+        const deleteBtn = document.getElementById('bulk-delete-btn');
+        deleteBtn.disabled = !anyChecked;
+    }
+});
+</script>
+{% endblock extra_js %}

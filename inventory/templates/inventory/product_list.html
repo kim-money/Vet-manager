@@ -1,59 +1,320 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>
-            <span class="d-flex align-items-center">
-                Product Inventory
-                <i class="fas fa-boxes" style="font-size: inherit; margin-left: 10px;"></i>
-            </span>
-        </h1>
-        <a href="{% url 'add_product' %}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> New Product
-        </a>
-        <a href="{% url 'add_order' %}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> add order
-        </a>
-    </div>
-</div>
+<div>
+    {% include 'inventory/inventory_navbar.html' %}
 
-<div class="container">
-    <div class="row justify-content-left">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header text-white" style="background-color: #448aa1;">
-                    Products in Stock
-                </div>
-                <div class="card-body">
-                    <div class="row" id="productList">
-                        {% for product in products %}
-                        <div class="col-md-4 mb-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ product.name }}</h5>
-                                    <p class="card-text">
-                                        <strong>Category:</strong> {{ product.category.name }}<br>
-                                        <strong>Price:</strong> ${{ product.price }}<br>
-                                        <strong>Stock:</strong> {{ product.stock }}
-                                    </p>
-                                    <a href="{% url 'product_detail' product.id %}" class="btn btn-info">
-                                        <i class="fas fa-info-circle"></i> Details
-                                    </a>
-                                    <a href="{% url 'edit_product' product.id %}" class="btn btn-warning">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </a>
-                                    <a href="{% url 'delete_product' product.id %}" class="btn btn-danger">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
+    <!-- Header with Add Product button -->
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="d-flex align-items-center">Products
+            <button class="btn btn-success ml-3" onclick="openProductModal()" title="Add Product">
+                <i class="fas fa-plus"></i>
+            </button>
+        </h1>
+
+        <!-- Actions: Print Barcodes, Delete Selected, Live Search, and Category Filter -->
+        <div class="d-flex align-items-center">
+            <button class="btn btn-primary mr-2" id="printBarcodesBtn" disabled onclick="printSelectedBarcodes()">
+                PRINT BARCODES
+            </button>
+            <button class="btn btn-danger mr-2" id="deleteSelectedBtn" disabled onclick="openDeleteModal()">
+                <i class="fas fa-trash"></i>
+            </button>
+            <div class="form-inline mr-2">
+                <input type="text" id="live-search" placeholder="Search products by name or barcode" class="form-control rounded-pill" style="width: 300px;">
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="categoryDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Sort by Category
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="categoryDropdown">
+                    <a class="dropdown-item" href="?category=all">All Categories</a>
+                    {% for category in categories %}
+                        <a class="dropdown-item" href="?category={{ category.id }}">{{ category.name }}</a>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Additional buttons for Import and Export Products -->
+    <div class="d-flex justify-content-end align-items-center mt-3">
+        <button class="btn btn-secondary mr-2" onclick="openImportProductModal()" title="Import Products">
+            <i class="fas fa-file-import"></i>
+        </button>
+        <button class="btn btn-secondary" onclick="window.location.href='{% url 'export_products' %}'" title="Export Products">
+            <i class="fas fa-file-export"></i>
+        </button>
+    </div>
+
+    <!-- Product Table -->
+    <form id="bulkDeleteForm" method="post" action="{% url 'delete_selected_products' %}">
+        {% csrf_token %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mt-3" id="productTable" style="font-size: 75%;">
+                <thead class="bg-success text-white">
+                    <tr>
+                        <th style="width: 5%;"><input type="checkbox" id="select-all"></th>
+                        <th style="width: 10%;" onclick="sortTable(1, 'string')">Barcode</th>
+                        <th style="width: 25%;" onclick="sortTable(2, 'string')">Product Name</th>
+                        <th style="width: 10%;" onclick="sortTable(3, 'number')">Buying Price</th>
+                        <th style="width: 10%;" onclick="sortTable(4, 'number')">Selling Price</th>
+                        <th style="width: 10%;" onclick="sortTable(5, 'number')">Wholesale Price</th>
+                        <th style="width: 10%;" onclick="sortTable(6, 'number')">Stock</th>
+                        <th style="width: 10%;" onclick="sortTable(7, 'date')">Expiry Date</th>
+                        <th style="width: 10%;" onclick="sortTable(8, 'string')">Packaging</th>
+                        <th style="width: 10%;" onclick="sortTable(9, 'string')">Category</th>
+                    </tr>
+                </thead>
+                <tbody id="product-list">
+                    {% for product in page_obj %}
+                    <tr onclick="window.location.href='{% url 'edit_product' product.id %}'">
+                        <td><input type="checkbox" name="selected_products" value="{{ product.id }}" class="product-checkbox" onclick="event.stopPropagation();"></td>
+                        <td>{{ product.barcode }}</td>
+                        <td style="font-weight: bold;">{{ product.name }}</td>
+                        <td>KSh {{ product.buying_price }}</td>
+                        <td>KSh {{ product.selling_price }}</td>
+                        <td>{% if product.wholesale_price %} KSh {{ product.wholesale_price }} {% else %} N/A {% endif %}</td>
+                        <td>
+                            {{ product.stock_quantity }}
+                            {% if product.is_low_stock %} <!-- Low Stock Alert -->
+                                <span class="text-danger" title="Low stock"><i class="fas fa-exclamation-triangle"></i></span>
+                            {% endif %}
+                        </td>
+                        <td>{{ product.expiry_date }}</td>
+                        <td>{{ product.packaging_type }}</td>
+                        <td>{% if product.category %}{{ product.category.name }}{% else %}Uncategorized{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls d-flex justify-content-center mt-4">
+        <div class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}" class="btn btn-outline-success">&laquo; First</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="btn btn-outline-success">Previous</a>
+            {% endif %}
+            <span class="current mx-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="btn btn-outline-success">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="btn btn-outline-success">Last &raquo;</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="productModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="productModalLabel">Add Product</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="productFormModal" method="post" action="{% url 'add_product' %}">
+                        {% csrf_token %}
+                        <!-- Form Fields (e.g., Barcode, Name, Prices, Stock) -->
+                        <div class="form-group">
+                            <label for="name">Name:</label>
+                            <input type="text" name="name" id="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="buying_price">Buying Price:</label>
+                            <input type="number" step="0.01" name="buying_price" id="buying_price" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="selling_price">Selling Price:</label>
+                            <input type="number" step="0.01" name="selling_price" id="selling_price" class="form-control" required>
+                        </div>
+                        <!-- Other Fields like Wholesale Price, Expiry Date, Category, etc. -->
+                        <button type="submit" class="btn btn-success btn-block">Add Product</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Products Modal -->
+    <div id="importProductModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="importProductModalLabel">Import Products</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="importProductFormModal" method="post" action="{% url 'import_products' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="imported_file">Upload CSV File:</label>
+                            <input type="file" name="imported_file" id="imported_file" class="form-control" accept=".csv" required>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">Import Products</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Selected Modal -->
+    <div id="deleteModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel">Delete Selected Products</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the selected products?</p>
+                    <form id="bulkDeleteForm" method="post" action="{% url 'delete_selected_products' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="selected_products" id="selectedProductsInput">
+                        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to open the Add Product modal
+    function openProductModal() {
+        $('#productModal').modal('show');
+    }
+
+    // Function to open the Import Products modal
+    function openImportProductModal() {
+        $('#importProductModal').modal('show');
+    }
+
+    // Function to open the Delete Selected modal
+    function openDeleteModal() {
+        const selectedProductIds = Array.from(document.querySelectorAll('.product-checkbox:checked'))
+            .map(checkbox => checkbox.value)
+            .filter(id => id !== "");
+
+        if (selectedProductIds.length === 0) {
+            alert("No products selected.");
+            return;
+        }
+
+        document.getElementById('selectedProductsInput').value = selectedProductIds.join(',');
+        $('#deleteModal').modal('show');
+    }
+
+    // Enable or disable the delete and print barcode buttons based on selections
+    function updateActionButtonsState() {
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        const deleteBtn = document.getElementById('deleteSelectedBtn');
+        const printBtn = document.getElementById('printBarcodesBtn');
+        const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+
+        if (anyChecked) {
+            deleteBtn.removeAttribute('disabled');
+            printBtn.removeAttribute('disabled');
+        } else {
+            deleteBtn.setAttribute('disabled', 'true');
+            printBtn.setAttribute('disabled', 'true');
+        }
+    }
+
+    // Print selected barcodes
+    function printSelectedBarcodes() {
+        const selectedProductIds = Array.from(document.querySelectorAll('.product-checkbox:checked'))
+            .map(checkbox => checkbox.value);
+
+        if (selectedProductIds.length > 0) {
+            window.location.href = `/inventory/products/print-barcodes/?ids=${selectedProductIds.join(',')}`;
+        } else {
+            alert("No products selected for barcode printing.");
+        }
+    }
+
+    // Select/Deselect all checkboxes
+    document.getElementById("select-all").onclick = function() {
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        for (const checkbox of checkboxes) {
+            checkbox.checked = this.checked;
+        }
+        updateActionButtonsState();
+    }
+
+    // Update the delete and print buttons when any checkbox is clicked
+    document.querySelectorAll('.product-checkbox').forEach(function(checkbox) {
+        checkbox.addEventListener('click', updateActionButtonsState);
+    });
+
+    // Live search functionality
+    document.getElementById('live-search').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#product-list tr');
+
+        rows.forEach(row => {
+            const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+            const barcode = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+
+            if (name.includes(query) || barcode.includes(query)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Sort table by column
+    let sortDirections = {};  // Track sort directions for each column
+
+    function sortTable(columnIndex, dataType) {
+        const table = document.getElementById("productTable");
+        const rows = Array.from(table.rows).slice(1);  // Exclude the header row
+        let sortedRows;
+
+        // Toggle sort direction: If not set, default to ascending
+        if (!sortDirections[columnIndex]) {
+            sortDirections[columnIndex] = 'asc';
+        } else {
+            sortDirections[columnIndex] = sortDirections[columnIndex] === 'asc' ? 'desc' : 'asc';
+        }
+
+        const sortDirection = sortDirections[columnIndex];
+
+        if (dataType === 'string') {
+            sortedRows = rows.sort((a, b) => {
+                const textA = a.cells[columnIndex].innerText.toLowerCase();
+                const textB = b.cells[columnIndex].innerText.toLowerCase();
+                return sortDirection === 'asc' ? textA.localeCompare(textB) : textB.localeCompare(textA);
+            });
+        } else if (dataType === 'number') {
+            sortedRows = rows.sort((a, b) => {
+                const numA = parseFloat(a.cells[columnIndex].innerText) || 0;
+                const numB = parseFloat(b.cells[columnIndex].innerText) || 0;
+                return sortDirection === 'asc' ? numA - numB : numB - numA;
+            });
+        } else if (dataType === 'date') {
+            sortedRows = rows.sort((a, b) => {
+                const dateA = new Date(a.cells[columnIndex].innerText);
+                const dateB = new Date(b.cells[columnIndex].innerText);
+                return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+            });
+        }
+
+        const tbody = table.querySelector("tbody");
+        sortedRows.forEach(row => tbody.appendChild(row));
+    }
+</script>
 {% endblock %}

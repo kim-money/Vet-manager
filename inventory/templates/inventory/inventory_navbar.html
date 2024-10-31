@@ -1,0 +1,76 @@
+
+{% block content %}
+<style>
+    /* Inventory Navbar Styles */
+    .nav-item a {
+        color: #fff;
+        text-decoration: none;
+        padding: 1px;
+        display: block;
+    }
+
+    .nav-item a:hover {
+        background-color: var(--hover-color);
+        color: #fff;
+    }
+
+    .nav-text {
+        display: inline-block;
+        margin-left: 10px;
+    }
+
+    .navbar-inventory {
+        background-color: var(--primary-color);
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .navbar-inventory .nav-item {
+        margin-right: 10px;
+        display: inline-block;
+    }
+
+    .navbar-inventory .nav-item a {
+        color: #fff;
+        font-weight: bold;
+    }
+</style>
+
+<div class="navbar-inventory">
+    <ul class="nav">
+        <li class="nav-item">
+            <a href="{% url 'product_list' %}" title="Products">
+                <i class="fas fa-boxes"></i>
+                <span class="nav-text">Products</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'category_list' %}" title="Categories">
+                <i class="fas fa-tags"></i>
+                <span class="nav-text">Categories</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'list_orders' %}" title="Orders">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="nav-text">Orders</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'supplier_list' %}" title="Suppliers">
+                <i class="fas fa-truck"></i>
+                <span class="nav-text">Suppliers</span>
+            </a>
+        </li>
+        <!--
+        <li class="nav-item">
+            <a href=" title="Stock">
+                <i class="fas fa-truck-loading"></i>
+                <span class="nav-text">Stock</span>
+            </a>
+        </li>
+        -->
+    </ul>
+</div>
+
+{% endblock %}
