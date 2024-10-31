@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% include 'inventory/inventory_navbar.html' %}
+<div>
+    <h1>Orders
+        <a href="{% url 'create_order' %}" style="padding: 0.5rem; border-radius: 50%;" class="btn btn-success ml-3">
+            <i class="fas fa-plus"></i>
+        </a>
+    </h1>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Order Number</th>
+                <th>Supplier</th>
+                <th>Date Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in page_obj %}
+            <tr>
+                <td onclick="window.location.href='{% url 'order_detail' order_number=order.order_number %}'">{{ order.order_number }}</td>
+                <td onclick="window.location.href='{% url 'order_detail' order_number=order.order_number %}'">{{ order.supplier.name }}</td>
+                <td onclick="window.location.href='{% url 'order_detail' order_number=order.order_number %}'">{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <a href="{% url 'download_lpo_pdf' order.order_number %}" class="btn btn-sm btn-primary">Download LPO</a>
+                    {% if order.is_received %}
+                        <a href="{% url 'download_receipt_pdf' order.order_number %}" class="btn btn-sm btn-secondary">Download Receipt</a>
+                    {% else %}
+                        <a href="{% url 'receive_stock' order.order_number %}" class="btn btn-sm btn-warning">Receive Stock</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+{% endblock %}

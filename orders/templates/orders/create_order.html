@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% include 'inventory/inventory_navbar.html' %}
+
+    <div>
+        <h1>Create New Order</h1>
+
+        <form id="order-form" method="post">
+            {% csrf_token %}
+            <!-- Supplier and Product Search Row -->
+            <div class="form-row">
+                <!-- Supplier Selection Dropdown -->
+                <div class="form-group col-md-6">
+                    {{ form.supplier.label_tag }}
+                    {{ form.supplier }}
+                </div>
+
+                <!-- Product Live Search -->
+                <div class="form-group col-md-6">
+                    <label for="product-search">Search Product:</label>
+                    <input type="text" id="product-search" class="form-control" placeholder="Start typing to search...">
+                    <ul id="product-results" class="list-group"></ul>
+                </div>
+            </div>
+
+            <!-- Add New Product Link -->
+            <div class="form-group">
+                <a href="#" class="btn btn-link" data-toggle="modal" data-target="#addProductModal">Can't find the product? Add new</a>
+            </div>
+
+            <!-- Table for Adding Items -->
+            <table class="table mt-4" id="order-items-table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Quantity Ordered</th>
+                        <th>Buying Price</th>
+                        <th>Subtotal</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Items will be added here via JavaScript -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                        <td colspan="2"><strong id="order-total">0.00</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <input type="hidden" name="items_data" id="items_data">
+            <button type="submit" class="btn btn-success">Create Order</button>
+        </form>
+    </div>
+
+    <!-- Modal for Adding New Product -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-product-form">
+                        <!-- Product Fields -->
+                        <div class="form-group">
+                            <label for="product-name">Product Name</label>
+                            <input type="text" id="product-name" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-barcode">Barcode</label>
+                            <input type="text" id="product-barcode" name="barcode" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="product-buying-price">Buying Price</label>
+                            <input type="number" id="product-buying-price" name="buying_price" class="form-control" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-selling-price">Selling Price</label>
+                            <input type="number" id="product-selling-price" name="selling_price" class="form-control" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-stock-quantity">Stock Quantity</label>
+                            <input type="number" id="product-stock-quantity" name="stock_quantity" class="form-control" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-packaging-type">Packaging Type</label>
+                            <input type="text" id="product-packaging-type" name="packaging_type" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="product-expiry-date">Expiry Date</label>
+                            <input type="date" id="product-expiry-date" name="expiry_date" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="product-category">Category</label>
+                            <select id="product-category" name="category" class="form-control" required>
+                                <option value="">-- Select a Category --</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button type="button" id="save-product" class="btn btn-primary">Save Product</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productSearch = document.getElementById('product-search');
+    const productResults = document.getElementById('product-results');
+    const orderItemsTable = document.getElementById('order-items-table').querySelector('tbody');
+    const orderTotalElement = document.getElementById('order-total');
+    const itemsDataInput = document.getElementById('items_data');
+    let orderItems = [];
+
+    // Product live search
+    productSearch.addEventListener('input', function() {
+        const query = this.value.trim();
+        if (query.length > 0) {
+            fetch(`/orders/search/products/?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    productResults.innerHTML = '';
+                    data.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = `${item.name} (In stock: ${item.stock_quantity})`;
+                        li.classList.add('list-group-item', 'list-group-item-action');
+                        li.dataset.productId = item.id;
+                        li.dataset.productName = item.name;
+                        li.dataset.buyingPrice = item.buying_price;
+                        productResults.appendChild(li);
+                    });
+                });
+        } else {
+            productResults.innerHTML = '';
+        }
+    });
+
+    // Handle click on search results
+    productResults.addEventListener('click', function(e) {
+        if (e.target && e.target.nodeName === "LI") {
+            const productId = e.target.dataset.productId;
+            const productName = e.target.dataset.productName;
+            const buyingPrice = parseFloat(e.target.dataset.buyingPrice);
+
+            addProductToOrder(productId, productName, buyingPrice);
+            productSearch.value = '';  // Clear the search input
+            productResults.innerHTML = '';  // Clear the results list
+        }
+    });
+
+    // Add product to order items table
+    function addProductToOrder(productId, productName, buyingPrice) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${productName}</td>
+            <td contenteditable="true" class="quantity-cell">1</td>
+            <td contenteditable="true" class="buying-price-cell">${buyingPrice.toFixed(2)}</td>
+            <td class="subtotal-cell">${buyingPrice.toFixed(2)}</td>
+            <td><button type="button" class="btn btn-danger btn-sm" onclick="removeItem(${productId})">Remove</button></td>
+        `;
+        orderItemsTable.appendChild(row);
+        updateItemsData();
+    }
+
+    // Update the items_data input with the current order items and calculate totals
+    function updateItemsData() {
+        const rows = document.getElementById('order-items-table').querySelectorAll('tbody tr');
+        let orderItems = [];
+        let total = 0;
+
+        rows.forEach(row => {
+            const quantity = parseInt(row.querySelector('.quantity-cell').textContent);
+            const price = parseFloat(row.querySelector('.buying-price-cell').textContent);
+            const subtotal = quantity * price;
+            row.querySelector('.subtotal-cell').textContent = subtotal.toFixed(2);
+            total += subtotal;
+
+            const productId = row.querySelector('button').getAttribute('onclick').match(/\d+/)[0];
+            orderItems.push({
+                product_id: productId,
+                quantity: quantity,
+                buying_price: price
+            });
+        });
+
+        document.getElementById('items_data').value = JSON.stringify(orderItems);
+        document.getElementById('order-total').textContent = total.toFixed(2);
+    }
+
+    // Remove item from order
+    window.removeItem = function(productId) {
+        const rows = document.getElementById('order-items-table').querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const rowProductId = row.querySelector('button').getAttribute('onclick').match(/\d+/)[0];
+            if (rowProductId == productId) {
+                row.remove();
+            }
+        });
+        updateItemsData();
+    };
+
+    // Update items data when the quantity or price is changed
+    orderItemsTable.addEventListener('input', function() {
+        updateItemsData();
+    });
+
+    // Handle adding new product
+    document.getElementById('save-product').addEventListener('click', function() {
+        const formData = new FormData(document.getElementById('add-product-form'));
+        fetch('/orders/add-order-product/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.id) {
+                // Add the new product to the order table
+                addProductToOrder(data.id, data.name, data.buying_price);
+
+                // Close the modal after adding the product
+                $('#addProductModal').modal('hide');
+
+                // Clear the form fields after closing the modal
+                document.getElementById('add-product-form').reset();
+            } else {
+                alert('Failed to add product. Please check for any validation errors.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+});
+</script>
+{% endblock %}
