@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+                {% include 'inventory/inventory_navbar.html' %}
+
+<div>
+    <div class="card border-success">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">Edit Supplier</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'edit_supplier' supplier.supplier_id %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_name" class="form-label">Name</label>
+                    <input type="text" name="name" id="id_name" class="form-control" value="{{ form.name.value }}" placeholder="Supplier Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="id_contact_person" class="form-label">Contact Person</label>
+                    <input type="text" name="contact_person" id="id_contact_person" class="form-control" value="{{ form.contact_person.value }}" placeholder="Contact Person">
+                </div>
+                <div class="form-group">
+                    <label for="id_phone" class="form-label">Phone</label>
+                    <input type="text" name="phone" id="id_phone" class="form-control" value="{{ form.phone.value }}" placeholder="Phone Number">
+                </div>
+                <div class="form-group">
+                    <label for="id_email" class="form-label">Email</label>
+                    <input type="email" name="email" id="id_email" class="form-control" value="{{ form.email.value }}" placeholder="Email Address">
+                </div>
+                <div class="form-group">
+                    <label for="id_address" class="form-label">Address</label>
+                    <textarea name="address" id="id_address" class="form-control" placeholder="Supplier Address">{{ form.address.value }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="id_city" class="form-label">City</label>
+                    <input type="text" name="city" id="id_city" class="form-control" value="{{ form.city.value }}" placeholder="City">
+                </div>
+                <div class="form-group">
+                    <label for="id_country" class="form-label">Country</label>
+                    <input type="text" name="country" id="id_country" class="form-control" value="{{ form.country.value }}" placeholder="Country">
+                </div>
+                <div class="form-group">
+                    <label for="id_notes" class="form-label">Notes</label>
+                    <textarea name="notes" id="id_notes" class="form-control" placeholder="Additional Notes">{{ form.notes.value }}</textarea>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'supplier_list' %}" class="btn btn-secondary">Back to List</a>
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+                {% include 'inventory/inventory_navbar.html' %}
+
+<div >
+    <div class="card border-success">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">Supplier Details</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="card-title">Supplier Information</h5>
+                    <p><strong>Supplier ID:</strong> {{ supplier.supplier_id }}</p>
+                    <p><strong>Supplier:</strong> {{ supplier.name }}</p>
+                    <p><strong>Contact Person:</strong> {{ supplier.contact_person }}</p>
+                    <p><strong>Phone:</strong> {{ supplier.phone }}</p>
+                    <p><strong>Email:</strong> {{ supplier.email }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="card-title">Address Information</h5>
+                    <p><strong>Address:</strong> {{ supplier.address }}</p>
+                    <p><strong>City:</strong> {{ supplier.city }}</p>
+                    <p><strong>Country:</strong> {{ supplier.country }}</p>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-md-12">
+                    <h5 class="card-title">Additional Notes</h5>
+                    <p>{{ supplier.notes|default:"No additional notes available." }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer d-flex justify-content-between">
+            <a href="{% url 'edit_supplier' supplier.supplier_id %}" class="btn btn-success">Edit Supplier</a>
+            <a href="{% url 'supplier_list' %}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
