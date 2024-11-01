@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Customer Detail - {{ customer.first_name }} {{ customer.last_name }}</h2>
+
+    <div>
+        <p><strong>Customer ID:</strong> {{ customer.customer_id }}</p>
+        <p><strong>Phone:</strong> {{ customer.phone }}</p>
+        <p><strong>Email:</strong> {{ customer.email }}</p>
+        <p><strong>Address:</strong> {{ customer.address }}</p>
+        <p><strong>Credit Limit:</strong> KSh {{ customer.credit_limit }}</p>
+        <p><strong>Credit Balance:</strong> KSh {{ customer.credit_balance }}</p>
+    </div>
+
+    <h3>Purchases</h3>
+    {% if sales %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Sale ID</th>
+                    <th>Date</th>
+                    <th>Total Amount</th>
+                    <th>Payment Method</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td>{{ sale.id }}</td>
+                    <td>{{ sale.sale_date|date:"Y-m-d H:i" }}</td>
+                    <td>KSh {{ sale.total_amount }}</td>
+                    <td>{{ sale.get_payment_method_display }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No purchases found for this customer.</p>
+    {% endif %}
+{% endblock %}

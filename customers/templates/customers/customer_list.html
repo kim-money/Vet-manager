@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block content %}
+                {% include 'sales/sales_navbar.html' %}
+
+<div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 >Customers
+        <a href="{% url 'customer_add' %}" class="btn btn-success ml-3" title="Add Customer" style="padding: 0.5rem; border-radius: 50%;">
+                <i class="fas fa-plus"></i>
+            </a>
+        </h1>
+
+         <div>
+            <a href="{% url 'export_customers' %}" class="btn btn-outline-primary ml-2" title="Export Customers to CSV">
+                <i class="fas fa-file-export"></i> Export
+            </a>
+            <a href="{% url 'import_customers' %}" class="btn btn-outline-secondary ml-2" title="Import Customers from CSV">
+                <i class="fas fa-file-import"></i> Import
+            </a>
+
+        </div>
+    </div>
+
+    <input type="text" id="searchBar" onkeyup="liveSearch()" placeholder="Search customers..." class="form-control mb-3 rounded-pill" style="width: 300px;">
+
+    <div class="table-responsive">
+        <table class="table table-hover table-striped mt-3" id="customerTable" style="font-size: 0.875em;">
+            <thead class="bg-success text-white">
+                <tr>
+                    <th onclick="sortTable(0)">Customer ID <span class="sort-icon"></span></th>
+                    <th onclick="sortTable(1)">Name <span class="sort-icon"></span></th>
+                    <th onclick="sortTable(2)">Phone <span class="sort-icon"></span></th>
+                    <th onclick="sortTable(3)">Email <span class="sort-icon"></span></th>
+                    <th onclick="sortTable(4)">Credit Balance (KSh) <span class="sort-icon"></span></th>
+                    <th onclick="sortTable(5)">Credit Limit (KSh) <span class="sort-icon"></span></th>
+                    <th onclick="sortTable(6, 'date')">Date Added <span class="sort-icon"></span></th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr onclick="window.location.href='{% url 'customer_detail' customer.customer_id %}'" style="cursor: pointer;">
+                    <td>{{ customer.customer_id }}</td>
+                    <td>{{ customer.first_name }} {{ customer.last_name }}</td>
+                    <td>{{ customer.phone }}</td>
+                    <td>{{ customer.email }}</td>
+                    <td>{{ customer.credit_balance|floatformat:2 }}</td>
+                    <td>{{ customer.credit_limit|floatformat:2 }}</td>
+                    <td>{{ customer.date_added|date:"Y-m-d" }}</td>
+                    <td>
+                        <button class="btn btn-link p-0" onclick="window.location.href='{% url 'customer_edit' customer.customer_id %}'; event.stopPropagation();">
+                            <i class="fas fa-edit text-orange"></i>
+                        </button>
+                        <button class="btn btn-link p-0" onclick="window.location.href='{% url 'customer_delete' customer.customer_id %}'; event.stopPropagation();">
+                            <i class="fas fa-trash-alt text-danger"></i>
+                        </button>
+                        <button class="btn btn-link p-0" onclick="window.location.href='{% url 'make_credit_payment' customer.customer_id %}'; event.stopPropagation();">
+                            <i class="fas fa-money-check-alt text-success"></i> <!-- Payment icon -->
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let sortOrder = {}; // To track the current sort order of each column
+
+    // Function to sort the table
+    function sortTable(columnIndex, type = 'text') {
+        const table = document.getElementById("customerTable");
+        const rows = Array.from(table.rows).slice(1); // Exclude header row
+        let sortedRows;
+
+        if (type === 'date') {
+            sortedRows = rows.sort((a, b) => {
+                const dateA = new Date(a.cells[columnIndex].innerText);
+                const dateB = new Date(b.cells[columnIndex].innerText);
+                return sortOrder[columnIndex] ? dateB - dateA : dateA - dateB;
+            });
+        } else {
+            sortedRows = rows.sort((a, b) => {
+                const textA = a.cells[columnIndex].innerText.toLowerCase();
+                const textB = b.cells[columnIndex].innerText.toLowerCase();
+                if (textA < textB) return sortOrder[columnIndex] ? 1 : -1;
+                if (textA > textB) return sortOrder[columnIndex] ? -1 : 1;
+                return 0;
+            });
+        }
+
+        sortOrder[columnIndex] = !sortOrder[columnIndex]; // Toggle sort order
+
+        sortedRows.forEach(row => table.appendChild(row)); // Re-attach sorted rows to the table
+    }
+
+    // Live search function
+    function liveSearch() {
+        let input = document.getElementById('searchBar').value.toLowerCase();
+        let table = document.getElementById('customerTable');
+        let tr = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < tr.length; i++) {  // Start from 1 to skip the header row
+            let tdArray = tr[i].getElementsByTagName('td');
+            let match = false;
+
+            for (let j = 0; j < tdArray.length - 1; j++) {  // -1 to skip the action buttons column
+                if (tdArray[j].textContent.toLowerCase().indexOf(input) > -1) {
+                    match = true;
+                    break;
+                }
+            }
+
+            if (match) {
+                tr[i].style.display = '';
+            } else {
+                tr[i].style.display = 'none';
+            }
+        }
+    }
+</script>
+{% endblock %}
