@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Sale Item</title>
+</head>
+<body>
+    <h1>Add Items to Sale #{{ sale.id }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ sale_item_form.as_p }}
+        <button type="submit">Add Item</button>
+    </form>
+    <a href="{% url 'sale_detail' sale_id=sale.id %}">Finish Sale</a>
+</body>
+</html>

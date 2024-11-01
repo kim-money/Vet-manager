@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt</title>
+    <style>
+        /* General receipt section */
+        .receipt-section {
+            width: 80mm; /* Fixed width for 80mm thermal printer */
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: white;
+            font-size: 12px;
+            margin: 0 auto;
+        }
+
+        /* Styling for print media */
+        @media print {
+            body * {
+                visibility: hidden; /* Hide everything except the receipt */
+            }
+
+            .receipt-section, .receipt-section * {
+                visibility: visible; /* Make the receipt visible */
+            }
+
+            .receipt-section {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 80mm; /* Width for thermal printer */
+                font-size: 12px;
+            }
+
+            @page {
+                size: 80mm auto; /* Set the page size with fixed width and dynamic height */
+                margin: 0; /* No margin, so it uses the full width */
+            }
+        }
+
+        table {
+            width: 100%;
+            font-size: 12px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 5px;
+            text-align: right;
+        }
+
+        th {
+            border-bottom: 1px solid black;
+        }
+
+        tfoot td {
+            padding-top: 5px;
+            border-top: 1px solid black;
+        }
+
+        /* Header styling */
+        h3 {
+            text-align: center;
+            margin: 5px 0;
+        }
+
+        p {
+            text-align: center;
+            margin: 3px 0;
+        }
+
+        /* Alignments */
+        .text-left {
+            text-align: left;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="receipt-section">
+    <h3>{{ shop.name }}</h3>
+    <p>{{ shop.address }}</p>
+    <p>Phone: {{ shop.phone }}</p>
+
+    <p>Served by: {{ served_by }}</p>
+    <p><strong>Date:</strong> {{ sale_date }}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="text-left">Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td class="text-left">{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>KSh {{ item.selling_price }}</td>
+                <td>KSh {{ item.subtotal }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-left"><strong>Total</strong></td>
+                <td><strong>KSh {{ total_amount }}</strong></td>
+            </tr>
+
+            <!-- Credit payment details -->
+            {% if payment_method == 'credit' %}
+            <tr>
+                <td colspan="3" class="text-left">Credit Amount</td>
+                <td>KSh {{ credit_amount }}</td>
+            </tr>
+            {% if credit_paid %}
+            <tr>
+                <td colspan="3" class="text-left">Amount Paid</td>
+                <td>KSh {{ credit_paid }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-left">Balance Due</td>
+                <td>KSh {{ balance_due }}</td>
+            </tr>
+            {% endif %}
+            {% endif %}
+
+            <!-- Mpesa payment details -->
+            {% if payment_method == 'mpesa' %}
+            <tr>
+                <td colspan="3" class="text-left">Mpesa Payment</td>
+                <td>KSh {{ total_amount }}</td> <!-- Use total_amount if full Mpesa payment -->
+            </tr>
+            {% if change_due > 0 %}
+            <tr>
+                <td colspan="3" class="text-left">Change</td>
+                <td>KSh {{ change_due }}</td>
+            </tr>
+            {% endif %}
+            {% endif %}
+
+            <!-- Cash payment details -->
+            {% if payment_method == 'cash' %}
+            <tr>
+                <td colspan="3" class="text-left">Cash</td>
+                <td>KSh {{ cash_given }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-left">Change</td>
+                <td>KSh {{ change_due }}</td>
+            </tr>
+            {% endif %}
+        </tfoot>
+    </table>
+</div>
+
+<!-- Automatically trigger the print dialog -->
+<script>
+    window.onload = function () {
+        window.print();  // Trigger print dialog automatically on page load
+        window.onafterprint = function () {
+            window.close();  // Optionally close the window after printing
+        };
+    };
+</script>
+
+</body>
+</html>

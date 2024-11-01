@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    {% include 'sales/sales_navbar.html' %}
+
+    <div>
+        <h1 class="text-center my-4">Sales Dashboard</h1>
+
+        <!-- Row for Daily, Weekly, and Monthly Sales Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-white mb-3">
+                    <div class="card-header bg-success text-white">Today's Sales</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Total: KSh {{ daily_sales.total_sales|default:0 }}</h5>
+                        <p class="card-text">Cash: KSh {{ daily_sales.cash_sales|default:0 }}</p>
+                        <p class="card-text">M-Pesa: KSh {{ daily_sales.mpesa_sales|default:0 }}</p>
+                        <p class="card-text">Credit: KSh {{ daily_sales.credit_sales|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card bg-white mb-3">
+                    <div class="card-header bg-primary text-white">This Week's Sales</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Total: KSh {{ weekly_sales.total_sales|default:0 }}</h5>
+                        <p class="card-text">Cash: KSh {{ weekly_sales.cash_sales|default:0 }}</p>
+                        <p class="card-text">M-Pesa: KSh {{ weekly_sales.mpesa_sales|default:0 }}</p>
+                        <p class="card-text">Credit: KSh {{ weekly_sales.credit_sales|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card bg-white mb-3">
+                    <div class="card-header bg-info text-white">This Month's Sales</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Total: KSh {{ monthly_sales.total_sales|default:0 }}</h5>
+                        <p class="card-text">Cash: KSh {{ monthly_sales.cash_sales|default:0 }}</p>
+                        <p class="card-text">M-Pesa: KSh {{ monthly_sales.mpesa_sales|default:0 }}</p>
+                        <p class="card-text">Credit: KSh {{ monthly_sales.credit_sales|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row for Six Months Sales Chart -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card bg-white">
+                    <div class="card-header bg-dark text-white">Last Six Months' Sales</div>
+                    <div class="card-body">
+                        <canvas id="sixMonthsSalesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('sixMonthsSalesChart').getContext('2d');
+            const sixMonthsSalesData = {{ six_months_sales|safe }};
+            const labels = sixMonthsSalesData.map(data => new Date(data.month).toLocaleString('default', { month: 'long' }));
+            const totalSales = sixMonthsSalesData.map(data => data.total_sales);
+            const cashSales = sixMonthsSalesData.map(data => data.cash_sales);
+            const mpesaSales = sixMonthsSalesData.map(data => data.mpesa_sales);
+            const creditSales = sixMonthsSalesData.map(data => data.credit_sales);
+
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Total Sales',
+                            data: totalSales,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Cash Sales',
+                            data: cashSales,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'M-Pesa Sales',
+                            data: mpesaSales,
+                            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Credit Sales',
+                            data: creditSales,
+                            backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                            borderColor: 'rgba(153, 102, 255, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

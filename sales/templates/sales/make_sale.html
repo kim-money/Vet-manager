@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% include 'sales/sales_navbar.html' %}
+
+    <h2>Make Sale</h2>
+
+    <!-- Customer Search Section -->
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Customer</h3>
+            <input type="text" id="customer-search" class="form-control" placeholder="Search by Customer ID, name, or phone number" autocomplete="off">
+            <div id="customer-results" class="list-group search-results"></div>
+        </div>
+
+        <!-- Product Search Section -->
+        <div class="col-md-6">
+            <h3>Product</h3>
+            <input type="text" id="product-search" class="form-control" placeholder="Search by product name or barcode" autocomplete="off">
+            <div id="product-results" class="list-group search-results"></div>
+        </div>
+    </div>
+
+    <!-- Sale Items Table -->
+    <div class="mt-4">
+        <table class="table table-bordered" id="sale-items-table">
+            <thead>
+                <tr style="background-color: #4CAF50; color: white;">
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="sale-items-body">
+                <!-- Sale items will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Payment Section -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h4>Payment Method</h4>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-primary payment-method-btn" data-method="cash">Cash</button>
+                <button type="button" class="btn btn-success payment-method-btn" data-method="mpesa">Mpesa</button>
+                <button type="button" class="btn btn-info payment-method-btn" data-method="credit">Credit</button>
+            </div>
+
+            <!-- Cash Payment Fields -->
+            <div id="cash-payment-section" class="mt-3" style="display: none;">
+                <label for="cash_given">Cash Given:</label>
+                <input type="number" id="cash_given" class="form-control" placeholder="Enter cash given">
+                <label for="change_due" class="mt-2">Change Due:</label>
+                <input type="text" id="change_due" class="form-control" readonly>
+            </div>
+
+            <!-- Mpesa Payment Fields -->
+            <div id="mpesa-payment-section" class="mt-3" style="display: none;">
+                <label for="mpesa_reference">Mpesa Reference:</label>
+                <input type="text" id="mpesa_reference" class="form-control" placeholder="Enter Mpesa reference number">
+            </div>
+
+            <!-- Credit Payment Fields -->
+            <div id="credit-payment-section" class="mt-3" style="display: none;">
+                <label for="credit_paid">Amount Paid:</label>
+                <input type="number" id="credit_paid" class="form-control" placeholder="Enter amount paid">
+                <label for="balance_due" class="mt-2">Balance Due:</label>
+                <input type="text" id="balance_due" class="form-control" readonly>
+            </div>
+        </div>
+
+        <!-- Sale Summary Section -->
+        <div class="col-md-6">
+            <h4>Sale Summary</h4>
+            <div class="summary-item">
+                <label for="total-amount">Total Amount:</label>
+                <span id="total-amount" class="summary-value">KSh 0.00</span>
+            </div>
+            <button type="button" id="complete-sale-btn" class="btn btn-success mt-3">Complete Sale</button>
+        </div>
+    </div>
+
+    <!-- Modal for Sale Completed -->
+    <div id="sale-completed-modal" class="modal" tabindex="-1" role="dialog" style="display: none;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sale Completed</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Sale completed successfully! You can now print the receipt or start a new sale.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="print-receipt-btn" class="btn btn-primary">Print Receipt</button>
+                    <button type="button" id="next-customer-btn" class="btn btn-secondary">Next Customer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let selectedCustomerId = null;
+            let selectedPaymentMethod = 'cash';  // Default to cash
+            let saleItems = [];
+
+            const completeSaleBtn = document.getElementById('complete-sale-btn');
+            const saleCompletedModal = document.getElementById('sale-completed-modal');
+            const printReceiptBtn = document.getElementById('print-receipt-btn');
+            const nextCustomerBtn = document.getElementById('next-customer-btn');
+
+            // Handle payment method selection
+            const paymentButtons = document.querySelectorAll('.payment-method-btn');
+            paymentButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    paymentButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedPaymentMethod = this.dataset.method;
+                    togglePaymentSections(selectedPaymentMethod);
+                });
+            });
+
+            function togglePaymentSections(method) {
+                document.getElementById('cash-payment-section').style.display = method === 'cash' ? 'block' : 'none';
+                document.getElementById('mpesa-payment-section').style.display = method === 'mpesa' ? 'block' : 'none';
+                document.getElementById('credit-payment-section').style.display = method === 'credit' ? 'block' : 'none';
+            }
+
+            // Live search for products
+            const productSearchInput = document.getElementById('product-search');
+            const productResults = document.getElementById('product-results');
+            productSearchInput.addEventListener('input', function () {
+                const query = productSearchInput.value.trim();
+                if (query.length > 0) {
+                    fetch(`/sales/search_products/?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            productResults.innerHTML = '';  // Clear previous results
+                            if (data.length === 0) {
+                                productResults.innerHTML = '<div class="list-group-item">No products found</div>';
+                            } else {
+                                data.forEach(item => {
+                                    const resultItem = document.createElement('div');
+                                    resultItem.classList.add('list-group-item', 'search-result');
+                                    resultItem.textContent = `Product: ${item.name} (Barcode: ${item.barcode}) - Price: KSh ${item.selling_price} - Stock: ${item.stock_quantity}`;
+                                    resultItem.dataset.productId = item.id;
+                                    resultItem.dataset.price = item.selling_price;
+
+                                    resultItem.addEventListener('click', function () {
+                                        addProductToSale({
+                                            product_id: item.id,
+                                            name: item.name,
+                                            price: item.selling_price,
+                                            stock_quantity: item.stock_quantity,
+                                            barcode: item.barcode
+                                        });
+                                        productSearchInput.value = '';  // Clear search input
+                                        productResults.innerHTML = '';  // Clear search results
+                                    });
+
+                                    productResults.appendChild(resultItem);
+                                });
+                            }
+                        });
+                } else {
+                    productResults.innerHTML = '';  // Clear results if no query
+                }
+            });
+
+            // Live search for customers
+            const customerSearchInput = document.getElementById('customer-search');
+            const customerResults = document.getElementById('customer-results');
+            customerSearchInput.addEventListener('input', function () {
+                const query = customerSearchInput.value.trim();
+                if (query.length > 0) {
+                    fetch(`/sales/search_customers/?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            customerResults.innerHTML = '';  // Clear previous results
+                            data.forEach(customer => {
+                                const item = document.createElement('div');
+                                item.classList.add('list-group-item', 'search-result');
+                                item.textContent = `${customer.first_name} ${customer.last_name} - ${customer.phone}`;
+                                item.dataset.customerId = customer.id;
+
+                                item.addEventListener('click', function () {
+                                    selectedCustomerId = item.dataset.customerId;
+                                    customerSearchInput.value = `${customer.first_name} ${customer.last_name}`;
+                                    customerResults.innerHTML = '';  // Clear search results
+                                });
+
+                                customerResults.appendChild(item);
+                            });
+                        });
+                } else {
+                    customerResults.innerHTML = '';  // Clear results if no query
+                }
+            });
+
+            // Add product to the sale
+            function addProductToSale(product) {
+                const existingItem = saleItems.find(item => item.product_id === product.product_id);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    saleItems.push({
+                        product_id: product.product_id,
+                        name: product.name,
+                        price: parseFloat(product.price),
+                        quantity: 1
+                    });
+                }
+                renderSaleItems();
+            }
+
+            // Render sale items in the table
+            function renderSaleItems() {
+                const saleItemsBody = document.getElementById('sale-items-body');
+                saleItemsBody.innerHTML = '';  // Clear the table body
+                saleItems.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.name} (Barcode ${item.barcode})</td>
+                        <td><input type="number" class="form-control price-input" value="${item.price}" data-product-id="${item.product_id}"></td>
+                        <td><input type="number" class="form-control quantity-input" value="${item.quantity}" data-product-id="${item.product_id}"></td>
+                        <td>KSh ${(item.price * item.quantity).toFixed(2)}</td>
+                        <td><button class="btn btn-danger btn-sm remove-item">Remove</button></td>
+                    `;
+
+                    row.querySelector('.remove-item').addEventListener('click', function () {
+                        saleItems = saleItems.filter(saleItem => saleItem.product_id !== item.product_id);
+                        renderSaleItems();
+                    });
+
+                    saleItemsBody.appendChild(row);
+                });
+
+                // Add event listeners for price and quantity inputs
+                document.querySelectorAll('.price-input').forEach(input => {
+                    input.addEventListener('input', function () {
+                        const productId = parseInt(this.dataset.productId);
+                        const newPrice = parseFloat(this.value);
+                        const item = saleItems.find(saleItem => saleItem.product_id === productId);
+                        if (item) {
+                            item.price = newPrice;
+                        }
+                        updateTotalAmount();
+                    });
+                });
+
+                document.querySelectorAll('.quantity-input').forEach(input => {
+                    input.addEventListener('input', function () {
+                        const productId = parseInt(this.dataset.productId);
+                        const newQuantity = parseInt(this.value);
+                        const item = saleItems.find(saleItem => saleItem.product_id === productId);
+                        if (item) {
+                            item.quantity = newQuantity;
+                        }
+                        updateTotalAmount();
+                    });
+                });
+
+                updateTotalAmount();
+            }
+
+            // Update total amount
+            function updateTotalAmount() {
+                const totalAmountDisplay = document.getElementById('total-amount');
+                let totalAmount = saleItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+                totalAmountDisplay.textContent = `KSh ${totalAmount.toFixed(2)}`;
+                if (selectedPaymentMethod === 'credit') {
+                    const creditPaidInput = document.getElementById('credit_paid');
+                    const balanceDueInput = document.getElementById('balance_due');
+                    const creditPaid = parseFloat(creditPaidInput.value) || 0;
+                    balanceDueInput.value = (totalAmount - creditPaid).toFixed(2);
+                }
+            }
+
+            const cashGivenInput = document.getElementById('cash_given');
+            const changeDueInput = document.getElementById('change_due');
+            cashGivenInput.addEventListener('input', function () {
+                const cashGiven = parseFloat(cashGivenInput.value) || 0;
+                const totalAmount = saleItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+                const changeDue = cashGiven - totalAmount;
+                changeDueInput.value = changeDue.toFixed(2);
+            });
+
+            // Complete sale
+            completeSaleBtn.addEventListener('click', function () {
+                const paymentData = {
+                    customer_id: selectedCustomerId,
+                    items: saleItems,
+                    payment_method: selectedPaymentMethod
+                };
+
+                if (selectedPaymentMethod === 'cash') {
+                    paymentData.cash_given = parseFloat(cashGivenInput.value) || 0;
+                } else if (selectedPaymentMethod === 'mpesa') {
+                    paymentData.mpesa_reference = document.getElementById('mpesa_reference').value;
+                } else if (selectedPaymentMethod === 'credit') {
+                    paymentData.credit_paid = parseFloat(document.getElementById('credit_paid').value) || 0;
+                }
+
+                fetch('/sales/make_sale/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify(paymentData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        saleCompletedModal.style.display = 'block';  // Show modal when sale is complete
+                        printReceiptBtn.dataset.saleId = data.sale_id;  // Store sale_id for receipt printing
+                    } else {
+                        alert('Error completing sale: ' + data.message);
+                    }
+                });
+            });
+
+            // Print receipt
+            printReceiptBtn.addEventListener('click', function () {
+                const saleId = printReceiptBtn.dataset.saleId;
+                window.open(`/sales/print_receipt/${saleId}/`, '_blank');
+            });
+
+            // Prepare for next customer
+            nextCustomerBtn.addEventListener('click', function () {
+                location.reload();  // Refresh the page for the next customer
+            });
+        });
+    </script>
+
+{% endblock %}

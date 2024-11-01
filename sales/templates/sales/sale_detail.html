@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+            {% include 'sales/sales_navbar.html' %}
+
+<h1 class="text-center text-white" style="background-color: #4CAF50; padding: 10px;">Sale Details</h1>
+
+<div class="card">
+    <div class="card-header" style="background-color: #4CAF50; color: white;">
+        Sale #{{ sale.id }}
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Customer:
+            {% if sale.customer %}
+                {{ sale.customer }}
+            {% else %}
+                Cash Customer
+            {% endif %}
+        </h5>
+        <p class="card-text"><strong>Date:</strong> {{ sale.sale_date|date:"Y-m-d H:i" }}</p>
+        <p class="card-text"><strong>Total Amount:</strong> {{ sale.total_amount }}</p>
+        <p class="card-text"><strong>Payment Method:</strong> {{ sale.get_payment_method_display }}</p>
+
+        <h4>Items</h4>
+        <table class="table table-bordered">
+            <thead style="background-color: #4CAF50; color: white;">
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Selling Price</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in sale.items.all %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.selling_price }}</td>
+                    <td>{{ item.subtotal }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="{% url 'sales_list' %}" class="btn btn-success">Back to Sales List</a>
+    </div>
+</div>
+{% endblock %}
