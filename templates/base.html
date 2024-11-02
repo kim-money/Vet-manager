@@ -14,6 +14,9 @@
 
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
 
     <!-- Dynamic Theme Variables -->
     <style>
@@ -50,8 +53,15 @@
 
     <aside class="sidebar" style="background-color: var(--primary-color);">
         <ul>
+            
             <li>
-                <a href="{% url 'dashboard' %}" title="Dashboard">
+                <a href="{% url 'make_sale' %}" title="Sales">
+                    <i class="fas fa-cash-register fa-2x"></i>
+                    <span class="sidebar-text">Sales</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'sale_dashboard' %}" title="Dashboard">
                     <i class="fas fa-tachometer-alt"></i>
                     <span class="sidebar-text">Dashboard</span>
                 </a>
