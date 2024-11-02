@@ -7,16 +7,13 @@
     <!-- Header with Add Product button -->
     <div class="d-flex justify-content-between align-items-center">
         <h1 class="d-flex align-items-center">Products
-            <button class="btn btn-success ml-3" onclick="openProductModal()" title="Add Product">
+            <a href="{% url 'add_product' %}" class="btn btn-success mr-2">
                 <i class="fas fa-plus"></i>
-            </button>
+            </a>
         </h1>
 
-        <!-- Actions: Print Barcodes, Delete Selected, Live Search, and Category Filter -->
-        <div class="d-flex align-items-center">
-            <button class="btn btn-primary mr-2" id="printBarcodesBtn" disabled onclick="printSelectedBarcodes()">
-                PRINT BARCODES
-            </button>
+        <!-- Actions: Delete Selected, Live Search, and Category Filter -->
+        <div class="d-flex align-items-center">            
             <button class="btn btn-danger mr-2" id="deleteSelectedBtn" disabled onclick="openDeleteModal()">
                 <i class="fas fa-trash"></i>
             </button>
@@ -38,10 +35,7 @@
     </div>
 
     <!-- Additional buttons for Import and Export Products -->
-    <div class="d-flex justify-content-end align-items-center mt-3">
-        <button class="btn btn-secondary mr-2" onclick="openImportProductModal()" title="Import Products">
-            <i class="fas fa-file-import"></i>
-        </button>
+    <div class="d-flex justify-content-end align-items-center mt-3">        
         <button class="btn btn-secondary" onclick="window.location.href='{% url 'export_products' %}'" title="Export Products">
             <i class="fas fa-file-export"></i>
         </button>
@@ -106,39 +100,7 @@
         </div>
     </div>
 
-    <!-- Add Product Modal -->
-    <div id="productModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="productModalLabel">Add Product</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="productFormModal" method="post" action="{% url 'add_product' %}">
-                        {% csrf_token %}
-                        <!-- Form Fields (e.g., Barcode, Name, Prices, Stock) -->
-                        <div class="form-group">
-                            <label for="name">Name:</label>
-                            <input type="text" name="name" id="name" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="buying_price">Buying Price:</label>
-                            <input type="number" step="0.01" name="buying_price" id="buying_price" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="selling_price">Selling Price:</label>
-                            <input type="number" step="0.01" name="selling_price" id="selling_price" class="form-control" required>
-                        </div>
-                        <!-- Other Fields like Wholesale Price, Expiry Date, Category, etc. -->
-                        <button type="submit" class="btn btn-success btn-block">Add Product</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+   
 
     <!-- Import Products Modal -->
     <div id="importProductModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importProductModalLabel" aria-hidden="true">

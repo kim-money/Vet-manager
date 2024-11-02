@@ -15,7 +15,7 @@ import io
 import json
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def category_list(request):
     categories = Category.objects.filter(parent__isnull=True).prefetch_related('subcategories')
     form = CategoryForm()
@@ -25,7 +25,7 @@ def category_list(request):
     })
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def add_category(request):
     if request.method == 'POST':
         form = CategoryForm(request.POST)
@@ -37,7 +37,7 @@ def add_category(request):
     return render(request, 'inventory/add_category.html', {'form': form})
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def edit_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == 'POST':
@@ -50,7 +50,7 @@ def edit_category(request, pk):
     return render(request, 'inventory/edit_category.html', {'form': form})
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def product_list(request):
     query = request.GET.get('q', '')
     category_id = request.GET.get('category', 'all')
@@ -83,7 +83,7 @@ def product_list(request):
     })
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
     batches = product.batches.all()
@@ -94,22 +94,27 @@ def product_detail(request, pk):
     })
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def add_product(request):
     if request.method == 'POST':
         form = ProductForm(request.POST)
+        print("Request method:", request.method) 
+        print("Form data:", request.POST)         
+        
         if form.is_valid():
-            product = form.save(commit=False)
-            if not product.barcode:
-                product.barcode = product.generate_barcode()
-            product.save()
-            return redirect('product_list')
+            form.save()
+            messages.success(request, "Product added successfully.")
+            return redirect('product_list') 
+        else:
+            print("Form errors:", form.errors)  
+            messages.error(request, "There was an error with your form submission.")
     else:
         form = ProductForm()
+
     return render(request, 'inventory/add_product.html', {'form': form})
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def edit_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
@@ -122,14 +127,14 @@ def edit_product(request, pk):
     return render(request, 'inventory/edit_product.html', {'form': form, 'product': product})
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def delete_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     product.delete()
     return redirect('product_list')
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def receive_stock(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
@@ -149,7 +154,7 @@ def receive_stock(request, product_id):
     return render(request, 'inventory/receive_stock.html', {'product': product, 'form': form})
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def export_products(request):
     products = Product.objects.all()
     response = HttpResponse(content_type='text/csv')
@@ -173,7 +178,7 @@ def export_products(request):
     return response
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def import_products(request):
     if request.method == 'POST':
         csv_file = request.FILES.get('imported_file')
@@ -211,7 +216,7 @@ def import_products(request):
     return redirect('product_list')
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def product_live_search(request):
     query = request.GET.get('q', '').strip().lower()  # Get the query and convert to lowercase
     if query:
@@ -229,7 +234,7 @@ def product_live_search(request):
 
 
 @require_POST
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def delete_selected_products(request):
     try:
         data = json.loads(request.body)
@@ -245,41 +250,4 @@ def delete_selected_products(request):
         return JsonResponse({'status': 'error', 'message': str(e)})
 
 
-@login_required(login_url='/auth/login/')
-def print_barcodes(request):
-    # Retrieve selected product IDs from the request (assuming they're passed in via GET or POST)
-    product_ids = request.GET.getlist('ids', [])  # or use request.POST.getlist('ids') if you are using POST
-    quantity = int(request.GET.get('quantity', 1))  # Number of barcodes to print per product, default to 1
-
-    products = Product.objects.filter(id__in=product_ids)
-
-    # Create PDF response
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="barcodes.pdf"'
-
-    # Initialize ReportLab PDF canvas
-    c = canvas.Canvas(response, pagesize=letter)
-    width, height = letter
-
-    # Y position for the first barcode
-    y_position = height - 100
-
-    for product in products:
-        # Generate the barcode for the product (using Code39 as an example)
-        barcode = code39.Extended39(product.barcode, barHeight=20, barWidth=0.5, checksum=False)
-
-        # Draw the barcodes multiple times, if specified
-        for _ in range(quantity):
-            if y_position < 50:  # Start a new page if we've reached the bottom of the current one
-                c.showPage()
-                y_position = height - 100
-
-            # Draw the barcode on the canvas
-            barcode.drawOn(c, 100, y_position)
-            c.drawString(100, y_position - 20, f"{product.name} - {product.barcode}")
-            y_position -= 100  # Move down for the next barcode
-
-    # Save the canvas
-    c.save()
-    return response
 

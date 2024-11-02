@@ -15,7 +15,7 @@ urlpatterns = [
     path('products/delete/', views.delete_selected_products, name='delete_selected_products'),
     path('products/export/', views.export_products, name='export_products'),
     path('products/import/', views.import_products, name='import_products'),
-    path('products/print-barcodes/', views.print_barcodes, name='print_barcodes'),
+    
 
     # Live Search (Updated to case-insensitive search)
     path('products/live-search/', views.product_live_search, name='product_live_search'),
