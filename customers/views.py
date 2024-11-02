@@ -9,7 +9,7 @@ import csv
 from django.http import HttpResponse
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def customer_detail(request, id):
     customer = get_object_or_404(Customer, customer_id=id)
     sales = Sale.objects.filter(customer=customer)
@@ -19,14 +19,14 @@ def customer_detail(request, id):
     })
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def customer_list(request):
     customers = Customer.objects.all()
     return render(request, 'customers/customer_list.html', {'customers': customers})
 
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def customer_add(request):
     if request.method == "POST":
         form = CustomerForm(request.POST)
@@ -37,7 +37,7 @@ def customer_add(request):
         form = CustomerForm()
     return render(request, 'customers/add_customer.html', {'form': form})
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def customer_edit(request, id):
     customer = get_object_or_404(Customer, customer_id=id)
     if request.method == "POST":
@@ -49,7 +49,7 @@ def customer_edit(request, id):
         form = CustomerForm(instance=customer)
     return render(request, 'customers/customer_edit.html', {'form': form, 'customer': customer})
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def customer_delete(request, id):
     customer = get_object_or_404(Customer, customer_id=id)
     if request.method == "POST":
@@ -58,7 +58,7 @@ def customer_delete(request, id):
     return render(request, 'customers/customer_confirm_delete.html', {'customer': customer})
 
 # Additional view to handle customer payments toward credit
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def make_credit_payment(request, customer_id):
     customer = get_object_or_404(Customer, customer_id=customer_id)
     if request.method == "POST":
@@ -72,7 +72,7 @@ def make_credit_payment(request, customer_id):
     return render(request, 'customers/make_credit_payment.html', {'customer': customer})
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def export_customers(request):
     # Create the HttpResponse object with the appropriate CSV header.
     response = HttpResponse(content_type='text/csv')
@@ -92,7 +92,7 @@ def export_customers(request):
     return response
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def import_customers(request):
     if request.method == 'POST':
         csv_file = request.FILES['file']

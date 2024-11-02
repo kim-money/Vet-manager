@@ -25,7 +25,7 @@ from django.contrib import messages
 logger = logging.getLogger('sales')
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def dashboard(request):
     # Get today's date
     today = timezone.now().date()
@@ -77,7 +77,7 @@ def dashboard(request):
     return render(request, 'sales/sale_dashboard.html', context)
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def sales_list(request):
     sales = Sale.objects.all().order_by('-sale_date')
     paginator = Paginator(sales, 25)  # Show 25 sales per page
@@ -90,7 +90,7 @@ def sales_list(request):
     return render(request, 'sales/sales_list.html', context)
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def sale_detail(request, sale_id):
     sale = get_object_or_404(Sale, id=sale_id)
     sale_items = SaleItem.objects.filter(sale=sale)
@@ -104,7 +104,7 @@ def sale_detail(request, sale_id):
 
 @csrf_exempt
 @transaction.atomic
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def make_sale(request):
     if request.method == 'GET':
         # Render the "Make Sale" page for GET requests
@@ -252,7 +252,7 @@ def receipt_view(request, sale_id):
     return render(request, 'sales/receipt.html', context)
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def search_products(request):
     query = request.GET.get('q', '').strip().lower()
     products = Product.objects.filter(
@@ -261,7 +261,7 @@ def search_products(request):
     return JsonResponse(list(products), safe=False)
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def search_customers(request):
     query = request.GET.get('q', '').strip().lower()
     customers = Customer.objects.filter(
@@ -270,7 +270,7 @@ def search_customers(request):
     return JsonResponse(list(customers), safe=False)
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 @transaction.atomic
 def update_sale(request, sale_id):
     sale = get_object_or_404(Sale, id=sale_id)
@@ -315,7 +315,7 @@ def update_sale(request, sale_id):
 
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def delete_sale(request, sale_id):
     sale = get_object_or_404(Sale, id=sale_id)
 
@@ -338,7 +338,7 @@ def delete_sale(request, sale_id):
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def edit_sale(request, sale_id):
     sale = get_object_or_404(Sale, id=sale_id)
 

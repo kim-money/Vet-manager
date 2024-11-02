@@ -6,7 +6,7 @@ from .forms import SupplierForm
 from django.core.paginator import Paginator
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def supplier_list(request):
     query = request.GET.get('q')
     suppliers = Supplier.objects.all().order_by('name')
@@ -28,7 +28,7 @@ def supplier_list(request):
         'edit_supplier_forms': edit_supplier_forms,
     })
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def add_supplier(request):
     if request.method == 'POST':
         form = SupplierForm(request.POST)
@@ -37,7 +37,7 @@ def add_supplier(request):
             return redirect('supplier_list')
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def edit_supplier(request, supplier_id):
     supplier = get_object_or_404(Supplier, supplier_id=supplier_id)
     if request.method == 'POST':
@@ -64,7 +64,7 @@ def edit_supplier(request, supplier_id):
     return render(request, 'suppliers/edit_supplier.html', {'form': form, 'supplier': supplier})
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def delete_supplier(request, supplier_id):
     supplier = get_object_or_404(Supplier, supplier_id=supplier_id)
     if request.method == 'POST':
@@ -72,7 +72,7 @@ def delete_supplier(request, supplier_id):
         return redirect('supplier_list')
     return redirect('supplier_list')
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def view_supplier(request, supplier_id):
     supplier = get_object_or_404(Supplier, supplier_id=supplier_id)
     return render(request, 'suppliers/view_supplier.html', {'supplier': supplier})
