@@ -11,7 +11,7 @@ def user_login(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('dashboard')
+            return redirect('sale_dashboard')
         else:
             messages.error(request, 'Invalid username or password')
     else:
@@ -23,6 +23,3 @@ def user_logout(request):
     logout(request)
     return redirect('login')
 
-@login_required(login_url= '/authlogin/login')
-def dashboard(request):
-    return render(request, 'dashboard.html')
