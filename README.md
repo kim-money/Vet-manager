@@ -1,7 +1,7 @@
 VET-MANAGER 
 
 
-This is a Comprehensive Management System for Veterinary Clinics
+This is a Comprehensive Management System for Agro-Veterinary shop
 
 CONTRIBUTORS 
 MOSES KIMANI WANGIGI
@@ -19,7 +19,7 @@ Challenges
 INTRODUCTION
 
 Vet-Manager is an all-in-one management solution designed for veterinary clinics. 
-It integrates multiple critical functions like Point of Sale (POS), Human Resources (HR) management, Stock management, and comprehensive business reporting into a single web-based application. 
+It integrates multiple critical functions like Point of Sale (POS), Stock management, and comprehensive business reporting into a single web-based application. 
 This system is aimed at streamlining operations, improving clinic efficiency, and offering powerful reporting tools to enhance decision-making processes.
 
 FEATURES 
@@ -34,7 +34,7 @@ TECHNOLOGIES USED:-
 
 Backend: Python, Django
 Frontend: JavaScript, HTML, CSS
-Database: PostgreSQL
+Database: SQLlite
 Version Control: Git, GitHub
 API Integration: RESTful APIs 
 Project Management: Trello
@@ -84,47 +84,10 @@ Admin Panel:
 To access the admin dashboard, use /admin and log in with the superuser credentials.
 
 
-PROJECT STRUCTURE 
-
-Here’s a brief overview of the directory structure:
-
-vet-manager/
-│
-├── vet_manager/             # Django project settings
-│   ├── settings.py          # Project settings
-│   ├── urls.py              # Main URL routing
-│   └── wsgi.py              # WSGI entry point
-│
-├── pos/                     # POS app module
-│   ├── models.py            # Database models for POS
-│   ├── views.py             # Views for handling POS operations
-│   ├── templates/           # HTML templates for POS
-│   └── urls.py              # POS app routing
-│
-├── hr/                      # HR app module
-│   ├── models.py            # Employee, Payroll models
-│   ├── views.py             # HR views
-│   ├── templates/           # HR HTML templates
-│   └── urls.py              # HR app routing
-│
-├── stock/                   # Stock management app module
-│   ├── models.py            # Stock models
-│   ├── views.py             # Stock views
-│   ├── templates/           # Stock HTML templates
-│   └── urls.py              # Stock app routing
-│
-├── reports/                 # Reports module
-│   ├── models.py            # Data models for reports
-│   ├── views.py             # Logic for generating reports
-│   ├── templates/           # Reports HTML templates
-│   └── urls.py              # Reports routing
-│
-└── manage.py                # Django management script
-
 CHALLENGES & LESSONS
 
 POS & Stock Synchronization: Ensuring real-time updates between the POS system and stock levels.
 HR Integration: Streamlining payroll, attendance, and leave management.
-Time Constraint: Meeting the 27-day timeline for a complete project.
+Time Constraint: Meeting the short timeline for a complete project has been the hardest part.
 
 
