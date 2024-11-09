@@ -190,7 +190,7 @@ def import_products(request):
         try:
             data_set = csv_file.read().decode('UTF-8')
             io_string = io.StringIO(data_set)
-            next(io_string)  # Skip the header row
+            next(io_string)  # Skips the header row
 
             for column in csv.reader(io_string, delimiter=',', quotechar="|"):
                 barcode = column[0] if column[0] else Product.generate_barcode()
@@ -219,8 +219,7 @@ def import_products(request):
 @login_required(login_url='/authlogin/login')
 def product_live_search(request):
     query = request.GET.get('q', '').strip().lower()  # Get the query and convert to lowercase
-    if query:
-        # Case-insensitive search for product name or barcode
+    if query:        
         products = Product.objects.filter(
             Q(name__icontains=query) | Q(barcode__icontains=query)
         ).values('id', 'name', 'barcode', 'selling_price', 'stock_quantity')

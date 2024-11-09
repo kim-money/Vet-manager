@@ -19,7 +19,7 @@ import json
 from datetime import datetime
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def list_orders(request):
     """List all orders with pagination."""
     orders = Order.objects.all().order_by('-created_at')
@@ -29,7 +29,7 @@ def list_orders(request):
     return render(request, 'orders/list_orders.html', {'page_obj': page_obj})
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def order_detail(request, order_number):
     """Show order details including items and totals."""
     order = get_object_or_404(Order, order_number=order_number)
@@ -54,7 +54,7 @@ def order_detail(request, order_number):
     return render(request, 'orders/order_detail.html', context)
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def create_order(request):
     """Create a new order with multiple items."""
     if request.method == 'POST':
@@ -92,7 +92,7 @@ def create_order(request):
     return render(request, 'orders/create_order.html', {'form': form})
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def receive_stock(request, order_number):
     """Receive stock for an order and create batches for products."""
     order = get_object_or_404(Order, order_number=order_number)
@@ -131,7 +131,7 @@ def receive_stock(request, order_number):
     return render(request, 'orders/receive_stock.html', {'order': order})
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def add_order_product(request):
     """Add a new product to the order."""
     if request.method == 'POST':
@@ -168,7 +168,7 @@ def product_search(request):
     return JsonResponse(results, safe=False)
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def generate_lpo_pdf(request, order_number):
     """Generate a PDF for the order's Local Purchase Order (LPO)."""
     order = get_object_or_404(Order, order_number=order_number)
@@ -252,7 +252,7 @@ def generate_lpo_pdf(request, order_number):
     return response
 
 
-@login_required(login_url='/auth/login/')
+@login_required(login_url='/authlogin/login')
 def generate_receipt_pdf(request, order_number):
     """Generate a PDF for the order's receipt."""
     order = get_object_or_404(Order, order_number=order_number)

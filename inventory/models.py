@@ -28,7 +28,7 @@ class Product(models.Model):
     barcode = models.CharField(max_length=255, blank=True, null=True, unique=True)
     buying_price = models.DecimalField(max_digits=10, decimal_places=2)
     selling_price = models.DecimalField(max_digits=10, decimal_places=2)
-    wholesale_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  # Optional
+    wholesale_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  
     stock_quantity = models.PositiveIntegerField(default=0)
     low_stock_threshold = models.PositiveIntegerField(default=0)  # To trigger low stock alert
     packaging_type = models.CharField(max_length=50, blank=True, null=True)

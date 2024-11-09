@@ -13,34 +13,7 @@
     <p><strong>Expiry Date:</strong> {{ product.expiry_date if product.expiry_date else 'No expiry date' }}</p>
 
     <h3>Batches for {{ product.name }}</h3>
-
-    {% if product.batches.exists %}
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Batch Code</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Expiry Date</th>
-                    <th>Created At</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for batch in product.batches.all %}
-                    <tr>
-                        <td>{{ batch.batch_code }}</td>
-                        <td>{{ batch.quantity }}</td>
-                        <td>{{ batch.price }}</td>
-                        <td>{{ batch.expiry_date if batch.expiry_date else 'No expiry date' }}</td>
-                        <td>{{ batch.created_at|date:"Y-m-d H:i" }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No batches available for this product.</p>
-    {% endif %}
-
+    
     <div class="mt-3">
         <a href="{% url 'add_batch' product.pk %}" class="btn btn-primary">Add Batch</a>
         <a href="{% url 'product_edit' product.pk %}" class="btn btn-secondary">Edit Product</a>
